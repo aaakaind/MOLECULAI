@@ -3,7 +3,7 @@ Molecule and chemical reaction visualization tool with interactive 3D visualizat
 
 ## Features
 
-- 🧪 **Interactive 3D Molecular Visualization**: Visualize molecules in 3D using 3Dmol.js library
+- 🧪 **Interactive 3D Molecular Visualization**: Visualize molecules in 3D using custom Canvas-based renderer
 - 🔐 **User Authentication**: Login/Register system to save custom views
 - 👁️ **Element Visibility Controls**: Toggle visibility of individual elements in molecules
 - 📊 **Element Quantities**: View the count of each element in selected molecules
@@ -16,7 +16,7 @@ Molecule and chemical reaction visualization tool with interactive 3D visualizat
 ## Technology Stack
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **3D Visualization**: 3Dmol.js
+- **3D Visualization**: Custom Canvas-based 3D molecular renderer
 - **Backend**: Node.js with Express
 - **Authentication**: JWT (JSON Web Tokens) with bcrypt
 - **MCP Server**: Custom molecular data server

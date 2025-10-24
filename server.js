@@ -12,7 +12,14 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'moleculai-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: JWT_SECRET must be set in production environment');
+        process.exit(1);
+    }
+    console.warn('WARNING: Using default JWT secret. Set JWT_SECRET environment variable for production.');
+    return 'moleculai-secret-key-change-in-production';
+})();
 
 // Middleware
 app.use(cors());

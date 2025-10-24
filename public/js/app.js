@@ -292,6 +292,12 @@ class MoleculAI {
         return names[symbol] || symbol;
     }
 
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
     setView(viewType) {
         this.viewer.setView(viewType);
     }
@@ -388,21 +394,41 @@ class MoleculAI {
             if (saves.length === 0) {
                 savesList.innerHTML = '<p class="placeholder">No saved visualizations yet</p>';
             } else {
-                savesList.innerHTML = saves.map(save => `
+                savesList.innerHTML = saves.map(save => {
+                    const saveId = save.id;
+                    const encodedSettings = btoa(JSON.stringify(save.settings));
+                    return `
                     <div class="save-item">
                         <div class="save-item-info">
-                            <div class="save-item-name">${save.name}</div>
+                            <div class="save-item-name">${this.escapeHtml(save.name)}</div>
                             <div class="save-item-details">
-                                Molecule: ${save.moleculeId} | 
+                                Molecule: ${this.escapeHtml(save.moleculeId)} | 
                                 Saved: ${new Date(save.createdAt).toLocaleDateString()}
                             </div>
                         </div>
                         <div class="save-item-actions">
-                            <button class="btn btn-primary btn-small" onclick="app.loadSavedVisualization('${save.id}', '${save.moleculeId}', '${JSON.stringify(save.settings).replace(/'/g, "\\'")}')">Load</button>
-                            <button class="btn btn-secondary btn-small" onclick="app.deleteSavedVisualization('${save.id}')">Delete</button>
+                            <button class="btn btn-primary btn-small" data-save-id="${saveId}" data-molecule-id="${save.moleculeId}" data-settings="${encodedSettings}">Load</button>
+                            <button class="btn btn-secondary btn-small" data-delete-id="${saveId}">Delete</button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
+
+                // Add event listeners to buttons
+                savesList.querySelectorAll('[data-save-id]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const saveId = e.target.dataset.saveId;
+                        const moleculeId = e.target.dataset.moleculeId;
+                        const settings = JSON.parse(atob(e.target.dataset.settings));
+                        this.loadSavedVisualization(saveId, moleculeId, settings);
+                    });
+                });
+
+                savesList.querySelectorAll('[data-delete-id]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const deleteId = e.target.dataset.deleteId;
+                        this.deleteSavedVisualization(deleteId);
+                    });
+                });
             }
 
             document.getElementById('saves-modal').style.display = 'block';
@@ -412,10 +438,8 @@ class MoleculAI {
         }
     }
 
-    async loadSavedVisualization(id, moleculeId, settingsStr) {
+    async loadSavedVisualization(id, moleculeId, settings) {
         try {
-            const settings = JSON.parse(settingsStr);
-
             // Load the molecule
             document.getElementById('molecule-select').value = moleculeId;
             await this.loadMolecule(moleculeId);
