@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOLECULAI - Molecular Visualization Tool</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/simple3d.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header>
+            <h1>🧪 MOLECULAI</h1>
+            <p class="subtitle">Molecular Visualization & Analysis Tool</p>
+            <div id="auth-section">
+                <div id="login-controls" class="auth-controls">
+                    <input type="text" id="username" placeholder="Username" />
+                    <input type="password" id="password" placeholder="Password" />
+                    <button id="login-btn" class="btn btn-primary">Login</button>
+                    <button id="register-btn" class="btn btn-secondary">Register</button>
+                </div>
+                <div id="user-controls" class="auth-controls" style="display: none;">
+                    <span id="user-name"></span>
+                    <button id="save-btn" class="btn btn-primary">💾 Save View</button>
+                    <button id="my-saves-btn" class="btn btn-secondary">📂 My Saves</button>
+                    <button id="logout-btn" class="btn btn-secondary">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="section">
+                    <h3>Select Molecule</h3>
+                    <select id="molecule-select" class="input-field">
+                        <option value="">Loading molecules...</option>
+                    </select>
+                    <div id="molecule-info" class="info-box"></div>
+                </div>
+
+                <div class="section">
+                    <h3>Standard Views</h3>
+                    <div class="view-buttons">
+                        <button class="btn btn-view" data-view="front">Front View</button>
+                        <button class="btn btn-view" data-view="top">Top View</button>
+                        <button class="btn btn-view" data-view="side">Side View</button>
+                        <button class="btn btn-view" data-view="iso">Isometric</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Rendering Style</h3>
+                    <select id="style-select" class="input-field">
+                        <option value="stick">Stick</option>
+                        <option value="sphere">Sphere</option>
+                        <option value="line">Line</option>
+                        <option value="cross">Cross</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Visualization Area -->
+            <div class="visualization-container">
+                <canvas id="viewer-3d" class="viewer"></canvas>
+                <div class="viewer-controls">
+                    <button id="reset-view" class="btn btn-small">🔄 Reset</button>
+                    <button id="zoom-in" class="btn btn-small">🔍 +</button>
+                    <button id="zoom-out" class="btn btn-small">🔍 -</button>
+                    <button id="toggle-spin" class="btn btn-small">🔄 Spin</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Section - Element Visibility Controls -->
+        <div class="edit-section">
+            <h3>Element Visibility & Quantities</h3>
+            <div id="element-controls" class="element-grid">
+                <p class="placeholder">Select a molecule to view element controls</p>
+            </div>
+        </div>
+
+        <!-- Modal for saved visualizations -->
+        <div id="saves-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>My Saved Visualizations</h2>
+                <div id="saves-list"></div>
+            </div>
+        </div>
+
+        <!-- Save dialog -->
+        <div id="save-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Save Visualization</h2>
+                <input type="text" id="save-name" class="input-field" placeholder="Enter a name for this view" />
+                <button id="confirm-save" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>
