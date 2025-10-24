@@ -3,6 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import moleculeServer from './mcp-server/molecules-server.js';
@@ -17,8 +18,11 @@ const JWT_SECRET = process.env.JWT_SECRET || (() => {
         console.error('FATAL: JWT_SECRET must be set in production environment');
         process.exit(1);
     }
-    console.warn('WARNING: Using default JWT secret. Set JWT_SECRET environment variable for production.');
-    return 'moleculai-secret-key-change-in-production';
+    // Generate random secret for development
+    const randomSecret = crypto.randomBytes(32).toString('hex');
+    console.warn('WARNING: Using randomly generated JWT secret for development.');
+    console.warn('Set JWT_SECRET environment variable for consistent sessions.');
+    return randomSecret;
 })();
 
 // Middleware

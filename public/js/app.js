@@ -396,7 +396,7 @@ class MoleculAI {
             } else {
                 savesList.innerHTML = saves.map(save => {
                     const saveId = save.id;
-                    const encodedSettings = btoa(JSON.stringify(save.settings));
+                    const encodedSettings = encodeURIComponent(JSON.stringify(save.settings));
                     return `
                     <div class="save-item">
                         <div class="save-item-info">
@@ -416,10 +416,15 @@ class MoleculAI {
                 // Add event listeners to buttons
                 savesList.querySelectorAll('[data-save-id]').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        const saveId = e.target.dataset.saveId;
-                        const moleculeId = e.target.dataset.moleculeId;
-                        const settings = JSON.parse(atob(e.target.dataset.settings));
-                        this.loadSavedVisualization(saveId, moleculeId, settings);
+                        try {
+                            const saveId = e.target.dataset.saveId;
+                            const moleculeId = e.target.dataset.moleculeId;
+                            const settings = JSON.parse(decodeURIComponent(e.target.dataset.settings));
+                            this.loadSavedVisualization(saveId, moleculeId, settings);
+                        } catch (error) {
+                            console.error('Error loading visualization:', error);
+                            alert('Failed to load visualization: Invalid data');
+                        }
                     });
                 });
 
