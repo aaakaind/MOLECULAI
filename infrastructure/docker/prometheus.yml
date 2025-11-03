@@ -1,0 +1,39 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'moleculai'
+    environment: 'production'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:3000']
+    metrics_path: '/metrics'
+
+  - job_name: 'mcp-collaboration'
+    static_configs:
+      - targets: ['mcp-collaboration:4000']
+    metrics_path: '/metrics'
+
+  - job_name: 'renderer'
+    static_configs:
+      - targets: ['renderer:5000']
+    metrics_path: '/metrics'
+
+  - job_name: 'compute-worker'
+    static_configs:
+      - targets: ['compute-worker:6000']
+    metrics_path: '/metrics'
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']

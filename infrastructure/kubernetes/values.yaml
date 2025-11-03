@@ -1,0 +1,217 @@
+# Default values for MOLECULAI
+replicaCount:
+  apiGateway: 2
+  mcpCollaboration: 3
+  renderer: 2
+  computeWorker: 2
+
+image:
+  registry: ghcr.io
+  repository: aaakaind/moleculai
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3000"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  apiGateway:
+    port: 3000
+    targetPort: 3000
+  mcpCollaboration:
+    port: 4000
+    targetPort: 4000
+  renderer:
+    port: 5000
+    targetPort: 5000
+  computeWorker:
+    port: 6000
+    targetPort: 6000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: moleculai.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: api-gateway
+        - path: /ws
+          pathType: Prefix
+          service: mcp-collaboration
+  tls:
+    - secretName: moleculai-tls
+      hosts:
+        - moleculai.example.com
+
+resources:
+  apiGateway:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  mcpCollaboration:
+    limits:
+      cpu: 2000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  renderer:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+      nvidia.com/gpu: 1
+    requests:
+      cpu: 500m
+      memory: 1Gi
+      nvidia.com/gpu: 1
+  computeWorker:
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+
+autoscaling:
+  enabled: true
+  apiGateway:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  mcpCollaboration:
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+  renderer:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 80
+  computeWorker:
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 85
+
+nodeSelector:
+  renderer:
+    nvidia.com/gpu: "true"
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - moleculai
+          topologyKey: kubernetes.io/hostname
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    username: moleculai
+    password: changeme
+    database: moleculai
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+      requests:
+        memory: 512Mi
+        cpu: 250m
+
+# Redis configuration
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: changeme
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      limits:
+        memory: 512Mi
+        cpu: 500m
+      requests:
+        memory: 256Mi
+        cpu: 100m
+
+# Environment variables
+env:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  MAX_UPLOAD_SIZE: "100mb"
+  SESSION_TIMEOUT: "24h"
+
+# Secrets (should be stored in Kubernetes secrets)
+secrets:
+  jwtSecret: ""
+  apiKey: ""
+  oauth:
+    clientId: ""
+    clientSecret: ""
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+
+# Storage for molecules, trajectories, and assets
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteMany
+  size: 100Gi
+  mountPath: /data
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 7
