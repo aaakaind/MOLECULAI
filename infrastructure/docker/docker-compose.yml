@@ -1,0 +1,148 @@
+version: '3.8'
+
+services:
+  # API Gateway - Main entry point
+  api-gateway:
+    build:
+      context: ../../services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - MCP_SERVER_URL=http://mcp-collaboration:4000
+      - RENDERER_URL=http://renderer:5000
+      - COMPUTE_WORKER_URL=http://compute-worker:6000
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:password@postgres:5432/moleculai
+    depends_on:
+      - redis
+      - postgres
+      - mcp-collaboration
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # MCP Collaboration Server - Realtime collaboration
+  mcp-collaboration:
+    build:
+      context: ../../services/mcp-collaboration
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://postgres:password@postgres:5432/moleculai
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # Renderer Service - Server-side rendering
+  renderer:
+    build:
+      context: ../../services/renderer
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+    # GPU access for headless rendering
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Compute Worker - Simulations and heavy computation
+  compute-worker:
+    build:
+      context: ../../services/compute-worker
+      dockerfile: Dockerfile
+    ports:
+      - "6000:6000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # Redis - Caching and session storage
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # PostgreSQL - Main database
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=moleculai
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ../../infrastructure/docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - moleculai-network
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  moleculai-network:
+    driver: bridge

@@ -1,0 +1,25 @@
+apiVersion: v2
+name: moleculai
+description: Enterprise-grade molecular visualization and reaction-engineering platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - molecular-visualization
+  - chemistry
+  - collaboration
+  - scientific-computing
+maintainers:
+  - name: MOLECULAI Team
+home: https://github.com/aaakaind/MOLECULAI
+sources:
+  - https://github.com/aaakaind/MOLECULAI
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled

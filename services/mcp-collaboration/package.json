@@ -1,0 +1,24 @@
+{
+  "name": "@moleculai/mcp-collaboration",
+  "version": "1.0.0",
+  "description": "MCP collaboration server for realtime molecular visualization",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "express": "^5.1.0",
+    "redis": "^4.6.0",
+    "uuid": "^9.0.1",
+    "yjs": "^13.6.10",
+    "lib0": "^0.2.94",
+    "prom-client": "^15.1.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0"
+  }
+}
